@@ -1,0 +1,52 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: biometricinfo
+spec:
+  workspaces:
+    - name: source
+    - name: maven-settings
+    - name: dockerfile
+  tasks:
+    - name: fetch-source
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      params:
+        - name: url
+          value: http://gogs.apps.gp-rosa.xkpt.p1.openshiftapps.com/grameenphone/biometricinfo.git
+        - name: revision
+          value: master
+      workspaces:
+        - name: output
+          workspace: source
+    - name: maven-build
+      taskRef:
+        name: maven
+        kind: ClusterTask
+      params:
+        - name: GOALS
+          value: ["package"]
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: source
+      runAfter:
+      - fetch-source
+    - name: build-image
+      taskRef:
+        name: buildah-docker
+        kind: ClusterTask
+      params:
+      - name: IMAGE
+        value: image-registry.openshift-image-registry.svc:5000/edwin/edwin-test
+      - name: PROVIDED_DOCKERFILE
+        value: $(workspaces.dockerfile.path)   
+      workspaces:
+        - name: source
+          workspace: source
+        - name: dockerfile
+          workspace: dockerfile
+      runAfter:
+      - maven-build

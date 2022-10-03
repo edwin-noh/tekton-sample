@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maven-settings
+data:
+  settings.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <settings>
+      <servers>
+        <server>
+          <id>nexus</id>
+          <username>admin</username>
+          <password>admin123</password>
+        </server>
+      </servers>
+      <mirrors>
+        <mirror>
+          <id>nexus</id>
+          <name>nexus</name>
+          <url>https://nexusrepo-nexusrepo.apps.gp-rosa.xkpt.p1.openshiftapps.com/repository/maven-public/</url>
+          <mirrorOf>*</mirrorOf>
+        </mirror>
+      </mirrors>
+    </settings>
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dockerfile
+data:
+  Dockerfile: |
+    FROM image-registry.openshift-image-registry.svc:5000/openshift/fuse7-java-openshift:1.10
+    ARG JAR_FILE=target/*.jar
+    COPY ${JAR_FILE} /deployments
+    CMD ["/usr/local/s2i/run"]

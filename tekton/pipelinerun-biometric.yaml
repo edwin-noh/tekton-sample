@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  annotations:
+    pipeline.openshift.io/started-by: admin
+    pipeline.tekton.dev/release: 4335ca0
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: image-build
+  name: biometricinfo-9pp1oi-build-image
+  namespace: edwin
+  labels:
+    tekton.dev/memberOf: tasks
+    app.kubernetes.io/version: '0.1'
+    tekton.dev/clusterTask: buildah
+    tekton.dev/pipeline: biometricinfo
+    operator.tekton.dev/provider-type: redhat
+    app.kubernetes.io/managed-by: tekton-pipelines
+    operator.tekton.dev/operand-name: openshift-pipelines-addons
+    tekton.dev/pipelineTask: build-image
+    tekton.dev/pipelineRun: biometricinfo-9pp1oi
+spec:
+  params:
+    - name: IMAGE
+      value: 'image-registry.openshift-image-registry.svc:5000/edwin/edwin-test'
+    - name: DOCKERFILE
+      value: /workspace/dockerfile
+  resources: {}
+  serviceAccountName: pipeline
+  taskRef:
+    kind: ClusterTask
+    name: buildah
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: source
+    - configMap:
+        name: dockerfile
+      name: dockerfile
